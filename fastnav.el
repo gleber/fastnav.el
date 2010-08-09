@@ -1,11 +1,28 @@
-;; fastnav.el -- Fast navigation and editing routines.
-;;
-;; Version 1.04
-;;
+;;; fastnav.el --- Fast navigation and editing routines.
+
 ;; Copyright (C) 2008, 2009, 2010  Zsolt Terek <zsolt@google.com>
+
+;; Version: 1.0.5
+;; Author: Zsolt Terek <zsolt@google.com>
+;; Keywords: nav fast fastnav navigation
+;; Compatibility: GNU Emacs 22, 23
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License
+;; as published by the Free Software Foundation; either version 2
+;; of the License, or (at your option) any later version.
 ;;
-;; Compatibility: GNU Emacs 22, 23.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 ;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program; if not, write to the Free Software
+;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+;; 02111-1307, USA.
+
+;;; Commentary:
 ;; Inspired by zap-to-char, this library defines different routines operating on
 ;; the next/previous N'th occurrence of a character.  When invoking one of these
 ;; commands, the user is interactively queried for a character while the
@@ -42,27 +59,17 @@
 ;; (global-set-key "\M-p" 'sprint-forward)
 ;; (global-set-key "\M-P" 'sprint-backward)
 ;;
-;; Changes:
+
+;;; Changes Log:
 ;;   2010-02-05: Fix for org mode, all commands were broken.
 ;;               Fix for electric characters in certain modes.
 ;;   2010-02-11: Yet another minor fix for switching to next/previous char.
 ;;   2010-05-28: Added sprint commands.
 ;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License
-;; as published by the Free Software Foundation; either version 2
-;; of the License, or (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program; if not, write to the Free Software
-;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
-;; 02111-1307, USA.
 
+;;; Code:
+
+;;;###autoload
 (defun search-char-forward (arg char)
   "Moves to the arg-th occurrence of char forward (backward if N
 is negative).  If there isn't room, go as far as possible (no
@@ -77,12 +84,14 @@ error)."
 	(backward-char 1)))
     (setq case-fold-search old-case-fold-search)))
 
+;;;###autoload
 (defun search-char-backward (arg char)
   "Moves to the arg-th occurrence of char backward (forward if N
 is negative).  If there isn't room, go as far as possible (no
 error)."
   (search-char-forward (- arg) char))  
 
+;;;###autoload
 (defun get-nth-chars (arg)
   "Computes and returns the positions of the ARG'th occurrence of
 characters of the range 1 .. 255."
@@ -113,6 +122,7 @@ characters of the range 1 .. 255."
       (setq case-fold-search old-case-fold-search)
       result)))
 
+;;;###autoload
 (defun highlight-read-char (text arg forwarder backwarder)
   "Highlights the ARG'th occurences of each character while
 querying one using message TEXT. Negative ARG means backward
@@ -164,12 +174,14 @@ search of occurences."
 ;;(key-binding (vector (read-event)))
 ;;(event-basic-type (read-event))
 
+;;;###autoload
 (defun highlight-read-char-backward (text arg forwarder backwarder)
   "Highlights the backward ARG'th occurences of each character
 while querying one using message TEXT."
   (let ((args (highlight-read-char text (- arg) forwarder backwarder)))
     (list (- (car args)) (cadr args))))
 
+;;;###autoload
 (defun jump-to-char-forward (arg)
   "Jump to the ARG'th occurence of a character that is queried
 interactively while highlighting the possible positions."
@@ -178,6 +190,7 @@ interactively while highlighting the possible positions."
 						   'jump-to-char-forward
 						   'jump-to-char-backward)))
 
+;;;###autoload
 (defun jump-to-char-backward (arg)
   "Jump backward to the ARG'th occurence of a character that is
 queried interactively while highlighting the possible positions."
@@ -187,6 +200,7 @@ queried interactively while highlighting the possible positions."
 				       'jump-to-char-forward
 				       'jump-to-char-backward)))
 
+;;;###autoload
 (defun mark-to-char-forward (arg)
   "Set mark before the ARG'th occurence of a character queried
 interactively."
@@ -198,6 +212,7 @@ interactively."
     (apply 'search-char-forward args)
     (exchange-point-and-mark)))
 
+;;;###autoload
 (defun mark-to-char-backward (arg)
   "Set mark backward after the ARG'th occurence of a character
 queried interactively."
@@ -209,6 +224,7 @@ queried interactively."
     (apply 'search-char-backward args)
     (exchange-point-and-mark)))
 
+;;;###autoload
 (defun zap-up-to-char-forward (arg)
   "Kill text up to the ARG'th occurence of a character queried
 interactively."
@@ -221,6 +237,7 @@ interactively."
 		     (apply 'search-char-forward args)
 		     (point)))))
 
+;;;###autoload
 (defun zap-up-to-char-backward (arg)
   "Kill text backward to the ARG'th occurence of a character
 queried interactively."
@@ -233,6 +250,7 @@ queried interactively."
 		     (apply 'search-char-backward args)
 		     (point)))))
 
+;;;###autoload
 (defun replace-char-forward (arg)
   "Interactively replaces the ARG'th occurence of a character."
   (interactive "p")
@@ -245,6 +263,7 @@ queried interactively."
 	(delete-char +1)
 	(insert char)))))
 
+;;;###autoload
 (defun replace-char-backward (arg)
   "Interactively replaces the ARG'th backward occurence of a
 character."
@@ -258,6 +277,7 @@ character."
 	(delete-char +1)
 	(insert char)))))
 
+;;;###autoload
 (defun insert-at-char-forward (arg)
   "Queries for a character and a string that is insterted at
 the ARG'th occurence of the character."
@@ -269,6 +289,7 @@ the ARG'th occurence of the character."
       (apply 'search-char-forward args)
       (insert (read-string "String: ")))))
 
+;;;###autoload
 (defun insert-at-char-backward (arg)
   "Queries for a character and a string that is insterted at
 the backward ARG'th occurence of the character."
@@ -280,6 +301,7 @@ the backward ARG'th occurence of the character."
       (apply 'search-char-backward args)
       (insert (read-string "String: ")))))
 
+;;;###autoload
 (defun execute-at-char-forward (arg)
   "Queries for a character and a key sequence that is executed at
 the ARG'th occurence of the character."
@@ -292,6 +314,7 @@ the ARG'th occurence of the character."
       (execute-kbd-macro (read-key-sequence-vector
 			  (if (minibufferp) nil "Key sequence: "))))))
 
+;;;###autoload
 (defun execute-at-char-backward (arg)
   "Queries for a character and a key sequence that is executed at
 the backward ARG'th occurence of the character."
@@ -304,6 +327,7 @@ the backward ARG'th occurence of the character."
       (execute-kbd-macro (read-key-sequence-vector
 			  (if (minibufferp) nil "Key sequence: "))))))
 
+;;;###autoload
 (defun delete-char-forward (arg)
   "Deletes the ARG'th occurence of a character, which is queried
 interactively while highlighting the possible positions."
@@ -315,6 +339,7 @@ interactively while highlighting the possible positions."
       (apply 'search-char-forward args)
       (delete-char +1))))
 
+;;;###autoload
 (defun delete-char-backward (arg)
   "Deletes the backward ARG'th occurence of a character, which is
 queried interactively while highlighting the possible positions."
@@ -326,6 +351,7 @@ queried interactively while highlighting the possible positions."
       (apply 'search-char-backward args)
       (delete-char +1))))
 
+;;;###autoload
 (defun sprint-forward (arg)
   "Performs a sequence of jumping forward to the next character
 matching the keyboard event."
@@ -339,6 +365,8 @@ matching the keyboard event."
 	    (apply 'search-char-forward result)
 	    (setq arg (if (> (car result) 0) 1 -1)))))))
 
+
+;;;###autoload
 (defun sprint-backward (arg)
   "Performs a sequence of jumping backward to the next character
 matching the keyboard event."
@@ -346,3 +374,5 @@ matching the keyboard event."
   (sprint-forward (- arg)))
 
 (provide 'fastnav)
+
+;;; fastnav.el ends here
