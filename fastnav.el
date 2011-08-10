@@ -1,8 +1,9 @@
 ;;; fastnav.el --- Fast navigation and editing routines.
 
 ;; Copyright (C) 2008, 2009, 2010  Zsolt Terek <zsolt@google.com>
+;; Copyright (C) 2010, 2011 Gleb Peregud <gleb.peregud@gmail.com>
 
-;; Version: 1.0.5
+;; Version: 1.0.6
 ;; Author: Zsolt Terek <zsolt@google.com>
 ;; Keywords: nav fast fastnav navigation
 ;; Compatibility: GNU Emacs 22, 23
@@ -34,43 +35,50 @@
 ;; character increases N, that is, the second, third, etc. occurrences are
 ;; highlighted and targeted.
 ;;
-;; The sprint-forward/backward commands apply iterative jumping until return/C-G
-;; is hit, making it possible to reach any point of the text with just a few
-;; keystrokes.
+;; The fastnav-sprint-forward/backward commands apply iterative
+;; jumping until return/C-G is hit, making it possible to reach any
+;; point of the text with just a few keystrokes.
 ;;
 ;; To use it, simply put this file under ~/.emacs.d/, add (require 'fastnav) to
 ;; your emacs initialization file and define some key bindings, for example:
 ;;
-;; (global-set-key "\M-z" 'zap-up-to-char-forward)
-;; (global-set-key "\M-Z" 'zap-up-to-char-backward)
-;; (global-set-key "\M-s" 'jump-to-char-forward)
-;; (global-set-key "\M-S" 'jump-to-char-backward)
-;; (global-set-key "\M-r" 'replace-char-forward)
-;; (global-set-key "\M-R" 'replace-char-backward)
-;; (global-set-key "\M-i" 'insert-at-char-forward)
-;; (global-set-key "\M-I" 'insert-at-char-backward)
-;; (global-set-key "\M-j" 'execute-at-char-forward)
-;; (global-set-key "\M-J" 'execute-at-char-backward)
-;; (global-set-key "\M-k" 'delete-char-forward)
-;; (global-set-key "\M-K" 'delete-char-backward)
-;; (global-set-key "\M-m" 'mark-to-char-forward)
-;; (global-set-key "\M-M" 'mark-to-char-backward)
+;; (global-set-key "\M-z" 'fastnav-zap-up-to-char-forward)
+;; (global-set-key "\M-Z" 'fastnav-zap-up-to-char-backward)
+;; (global-set-key "\M-s" 'fastnav-jump-to-char-forward)
+;; (global-set-key "\M-S" 'fastnav-jump-to-char-backward)
+;; (global-set-key "\M-r" 'fastnav-replace-char-forward)
+;; (global-set-key "\M-R" 'fastnav-replace-char-backward)
+;; (global-set-key "\M-i" 'fastnav-insert-at-char-forward)
+;; (global-set-key "\M-I" 'fastnav-insert-at-char-backward)
+;; (global-set-key "\M-j" 'fastnav-execute-at-char-forward)
+;; (global-set-key "\M-J" 'fastnav-execute-at-char-backward)
+;; (global-set-key "\M-k" 'fastnav-delete-char-forward)
+;; (global-set-key "\M-K" 'fastnav-delete-char-backward)
+;; (global-set-key "\M-m" 'fastnav-mark-to-char-forward)
+;; (global-set-key "\M-M" 'fastnav-mark-to-char-backward)
 ;;
-;; (global-set-key "\M-p" 'sprint-forward)
-;; (global-set-key "\M-P" 'sprint-backward)
+;; (global-set-key "\M-p" 'fastnav-sprint-forward)
+;; (global-set-key "\M-P" 'fastnav-sprint-backward)
 ;;
+;; This library can be originally found at:
+;;   http://www.emacswiki.org/emacs/FastNav
+;; Package.el compatible version can be found at
+;;   https://github.com/gleber/fastnav.el
+;; it has been uploaded to ELPA and Marmalade
 
 ;;; Changes Log:
 ;;   2010-02-05: Fix for org mode, all commands were broken.
 ;;               Fix for electric characters in certain modes.
 ;;   2010-02-11: Yet another minor fix for switching to next/previous char.
 ;;   2010-05-28: Added sprint commands.
+;;   2010-08-06: Make fastnav compatible with package.el
+;;   2011-08-10: Add fastnav- prefix to autoload-ed functions
 ;;
 
 ;;; Code:
 
 ;;;###autoload
-(defun search-char-forward (arg char)
+(defun fastnav-search-char-forward (arg char)
   "Moves to the arg-th occurrence of char forward (backward if N
 is negative).  If there isn't room, go as far as possible (no
 error)."
@@ -85,14 +93,14 @@ error)."
     (setq case-fold-search old-case-fold-search)))
 
 ;;;###autoload
-(defun search-char-backward (arg char)
+(defun fastnav-search-char-backward (arg char)
   "Moves to the arg-th occurrence of char backward (forward if N
 is negative).  If there isn't room, go as far as possible (no
 error)."
-  (search-char-forward (- arg) char))  
+  (fastnav-search-char-forward (- arg) char))
 
 ;;;###autoload
-(defun get-nth-chars (arg)
+(defun fastnav-get-nth-chars (arg)
   "Computes and returns the positions of the ARG'th occurrence of
 characters of the range 1 .. 255."
   (let ((seq '())
@@ -123,7 +131,7 @@ characters of the range 1 .. 255."
       result)))
 
 ;;;###autoload
-(defun highlight-read-char (text arg forwarder backwarder)
+(defun fastnav-highlight-read-char (text arg forwarder backwarder)
   "Highlights the ARG'th occurences of each character while
 querying one using message TEXT. Negative ARG means backward
 search of occurences."
@@ -141,7 +149,7 @@ search of occurences."
 			  (overlay-put ov 'priority 100)
 			  (overlay-put ov 'face lazy-highlight-face)
 			  ov)))
-		  (get-nth-chars arg))
+		  (fastnav-get-nth-chars arg))
 	  (let* ((event (read-event))
 		 (char (event-basic-type event))
 		 (delta 0)
@@ -175,203 +183,203 @@ search of occurences."
 ;;(event-basic-type (read-event))
 
 ;;;###autoload
-(defun highlight-read-char-backward (text arg forwarder backwarder)
+(defun fastnav-highlight-read-char-backward (text arg forwarder backwarder)
   "Highlights the backward ARG'th occurences of each character
 while querying one using message TEXT."
-  (let ((args (highlight-read-char text (- arg) forwarder backwarder)))
+  (let ((args (fastnav-highlight-read-char text (- arg) forwarder backwarder)))
     (list (- (car args)) (cadr args))))
 
 ;;;###autoload
-(defun jump-to-char-forward (arg)
+(defun fastnav-jump-to-char-forward (arg)
   "Jump to the ARG'th occurence of a character that is queried
 interactively while highlighting the possible positions."
   (interactive "p")
-  (apply 'search-char-forward (highlight-read-char "Jump to char:" arg
-						   'jump-to-char-forward
-						   'jump-to-char-backward)))
+  (apply 'fastnav-search-char-forward (fastnav-highlight-read-char "Jump to char:" arg
+                                                                   'fastnav-jump-to-char-forward
+                                                                   'fastnav-jump-to-char-backward)))
 
 ;;;###autoload
-(defun jump-to-char-backward (arg)
+(defun fastnav-jump-to-char-backward (arg)
   "Jump backward to the ARG'th occurence of a character that is
 queried interactively while highlighting the possible positions."
   (interactive "p")
-  (apply 'search-char-backward
-	 (highlight-read-char-backward "Jump to char backward:" arg
-				       'jump-to-char-forward
-				       'jump-to-char-backward)))
+  (apply 'fastnav-search-char-backward
+	 (fastnav-highlight-read-char-backward "Jump to char backward:" arg
+                                               'fastnav-jump-to-char-forward
+                                               'fastnav-jump-to-char-backward)))
 
 ;;;###autoload
-(defun mark-to-char-forward (arg)
+(defun fastnav-mark-to-char-forward (arg)
   "Set mark before the ARG'th occurence of a character queried
 interactively."
   (interactive "p")
-  (let ((args (highlight-read-char "Copy to char: " arg
-				   'mark-to-char-forward
-				   'mark-to-char-backward)))
+  (let ((args (fastnav-highlight-read-char "Copy to char: " arg
+                                           'fastnav-mark-to-char-forward
+                                           'fastnav-mark-to-char-backward)))
     (set-mark (point))
-    (apply 'search-char-forward args)
+    (apply 'fastnav-search-char-forward args)
     (exchange-point-and-mark)))
 
 ;;;###autoload
-(defun mark-to-char-backward (arg)
+(defun fastnav-mark-to-char-backward (arg)
   "Set mark backward after the ARG'th occurence of a character
 queried interactively."
   (interactive "p")
-  (let ((args (highlight-read-char-backward "Copy to char backward: " arg
-					    'mark-to-char-forward
-					    'mark-to-char-backward)))
+  (let ((args (fastnav-highlight-read-char-backward "Copy to char backward: " arg
+                                                    'fastnav-mark-to-char-forward
+                                                    'fastnav-mark-to-char-backward)))
     (set-mark (point))
-    (apply 'search-char-backward args)
+    (apply 'fastnav-search-char-backward args)
     (exchange-point-and-mark)))
 
 ;;;###autoload
-(defun zap-up-to-char-forward (arg)
+(defun fastnav-zap-up-to-char-forward (arg)
   "Kill text up to the ARG'th occurence of a character queried
 interactively."
   (interactive "p")
-  (let ((args (highlight-read-char "Zap up to char: " arg
-				   'zap-up-to-char-forward
-				   'zap-up-to-char-backward)))
+  (let ((args (fastnav-highlight-read-char "Zap up to char: " arg
+                                           'fastnav-zap-up-to-char-forward
+                                           'fastnav-zap-up-to-char-backward)))
     (delete-region (point)
-		   (progn 
-		     (apply 'search-char-forward args)
+		   (progn
+		     (apply 'fastnav-search-char-forward args)
 		     (point)))))
 
 ;;;###autoload
-(defun zap-up-to-char-backward (arg)
+(defun fastnav-zap-up-to-char-backward (arg)
   "Kill text backward to the ARG'th occurence of a character
 queried interactively."
   (interactive "p")
-  (let ((args (highlight-read-char-backward "Zap up to char backward: " arg
-					    'zap-up-to-char-forward
-					    'zap-up-to-char-backward)))
+  (let ((args (fastnav-highlight-read-char-backward "Zap up to char backward: " arg
+                                                    'fastnav-zap-up-to-char-forward
+                                                    'fastnav-zap-up-to-char-backward)))
     (delete-region (point)
-		   (progn 
-		     (apply 'search-char-backward args)
+		   (progn
+		     (apply 'fastnav-search-char-backward args)
 		     (point)))))
 
 ;;;###autoload
-(defun replace-char-forward (arg)
+(defun fastnav-replace-char-forward (arg)
   "Interactively replaces the ARG'th occurence of a character."
   (interactive "p")
-  (let ((args (highlight-read-char "Replace char: " arg
-				   'replace-char-forward
-				   'replace-char-backward)))
+  (let ((args (fastnav-highlight-read-char "Replace char: " arg
+                                           'fastnav-replace-char-forward
+                                           'fastnav-replace-char-backward)))
     (save-excursion
-      (apply 'search-char-forward args)
+      (apply 'fastnav-search-char-forward args)
       (let ((char (read-char (if (minibufferp) nil "With char: "))))
 	(delete-char +1)
 	(insert char)))))
 
 ;;;###autoload
-(defun replace-char-backward (arg)
+(defun fastnav-replace-char-backward (arg)
   "Interactively replaces the ARG'th backward occurence of a
 character."
   (interactive "p")
-  (let ((args (highlight-read-char-backward "Replace char backward: " arg
-					    'replace-char-forward
-					    'replace-char-backward)))
+  (let ((args (fastnav-highlight-read-char-backward "Replace char backward: " arg
+                                                    'fastnav-replace-char-forward
+                                                    'fastnav-replace-char-backward)))
     (save-excursion
-      (apply 'search-char-backward args)
+      (apply 'fastnav-search-char-backward args)
       (let ((char (read-char (if (minibufferp) nil "With char: "))))
 	(delete-char +1)
 	(insert char)))))
 
 ;;;###autoload
-(defun insert-at-char-forward (arg)
+(defun fastnav-insert-at-char-forward (arg)
   "Queries for a character and a string that is insterted at
 the ARG'th occurence of the character."
   (interactive "p")
-  (let ((args (highlight-read-char "Execute forward before: " arg
-				   'insert-at-char-forward
-				   'insert-at-char-backward)))
+  (let ((args (fastnav-highlight-read-char "Execute forward before: " arg
+                                           'fastnav-insert-at-char-forward
+                                           'fastnav-insert-at-char-backward)))
     (save-excursion
-      (apply 'search-char-forward args)
+      (apply 'fastnav-search-char-forward args)
       (insert (read-string "String: ")))))
 
 ;;;###autoload
-(defun insert-at-char-backward (arg)
+(defun fastnav-insert-at-char-backward (arg)
   "Queries for a character and a string that is insterted at
 the backward ARG'th occurence of the character."
   (interactive "p")
-  (let ((args (highlight-read-char-backward "Execute backward before: " arg
-					    'insert-at-char-forward
-					    'insert-at-char-backward)))
+  (let ((args (fastnav-highlight-read-char-backward "Execute backward before: " arg
+                                                    'fastnav-insert-at-char-forward
+                                                    'fastnav-insert-at-char-backward)))
     (save-excursion
-      (apply 'search-char-backward args)
+      (apply 'fastnav-search-char-backward args)
       (insert (read-string "String: ")))))
 
 ;;;###autoload
-(defun execute-at-char-forward (arg)
+(defun fastnav-execute-at-char-forward (arg)
   "Queries for a character and a key sequence that is executed at
 the ARG'th occurence of the character."
   (interactive "p")
-  (let ((args (highlight-read-char "Execute forward before: " arg
-				   'execute-at-char-forward
-				   'execute-at-char-backward)))
+  (let ((args (fastnav-highlight-read-char "Execute forward before: " arg
+                                           'fastnav-execute-at-char-forward
+                                           'fastnav-execute-at-char-backward)))
     (save-excursion
-      (apply 'search-char-forward args)
+      (apply 'fastnav-search-char-forward args)
       (execute-kbd-macro (read-key-sequence-vector
 			  (if (minibufferp) nil "Key sequence: "))))))
 
 ;;;###autoload
-(defun execute-at-char-backward (arg)
+(defun fastnav-execute-at-char-backward (arg)
   "Queries for a character and a key sequence that is executed at
 the backward ARG'th occurence of the character."
   (interactive "p")
-  (let ((args (highlight-read-char-backward "Execute backward before: " arg
-					    'execute-at-char-forward
-					    'execute-at-char-backward)))
+  (let ((args (fastnav-highlight-read-char-backward "Execute backward before: " arg
+                                                    'fastnav-execute-at-char-forward
+                                                    'fastnav-execute-at-char-backward)))
     (save-excursion
-      (apply 'search-char-backward args)
+      (apply 'fastnav-search-char-backward args)
       (execute-kbd-macro (read-key-sequence-vector
 			  (if (minibufferp) nil "Key sequence: "))))))
 
 ;;;###autoload
-(defun delete-char-forward (arg)
+(defun fastnav-delete-char-forward (arg)
   "Deletes the ARG'th occurence of a character, which is queried
 interactively while highlighting the possible positions."
   (interactive "p")
-  (let ((args (highlight-read-char "Delete forward before: " arg
-				   'delete-char-forward
-				   'delete-char-backward)))
+  (let ((args (fastnav-highlight-read-char "Delete forward before: " arg
+                                           'fastnav-delete-char-forward
+                                           'fastnav-delete-char-backward)))
     (save-excursion
-      (apply 'search-char-forward args)
+      (apply 'fastnav-search-char-forward args)
       (delete-char +1))))
 
 ;;;###autoload
-(defun delete-char-backward (arg)
+(defun fastnav-delete-char-backward (arg)
   "Deletes the backward ARG'th occurence of a character, which is
 queried interactively while highlighting the possible positions."
   (interactive "p")
-  (let ((args (highlight-read-char-backward "Delete backward before: \n" arg
-					    'delete-char-forward
-					    'delete-char-backward)))
+  (let ((args (fastnav-highlight-read-char-backward "Delete backward before: \n" arg
+                                                    'fastnav-delete-char-forward
+                                                    'fastnav-delete-char-backward)))
     (save-excursion
-      (apply 'search-char-backward args)
+      (apply 'fastnav-search-char-backward args)
       (delete-char +1))))
 
 ;;;###autoload
-(defun sprint-forward (arg)
+(defun fastnav-sprint-forward (arg)
   "Performs a sequence of jumping forward to the next character
 matching the keyboard event."
   (interactive "p")
   (let ((result t))
     (while result
-      (if (setq result (highlight-read-char "Sprint:" arg
-					    'sprint-forward
-					    'sprint-backward))
+      (if (setq result (fastnav-highlight-read-char "Sprint:" arg
+                                                    'fastnav-sprint-forward
+                                                    'fastnav-sprint-backward))
 	  (progn
-	    (apply 'search-char-forward result)
+	    (apply 'fastnav-search-char-forward result)
 	    (setq arg (if (> (car result) 0) 1 -1)))))))
 
 
 ;;;###autoload
-(defun sprint-backward (arg)
+(defun fastnav-sprint-backward (arg)
   "Performs a sequence of jumping backward to the next character
 matching the keyboard event."
   (interactive "p")
-  (sprint-forward (- arg)))
+  (fastnav-sprint-forward (- arg)))
 
 (provide 'fastnav)
 
