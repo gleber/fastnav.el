@@ -259,7 +259,7 @@ queried interactively."
 		     (point)))))
 
 ;;;###autoload
-(defun fastnav-zap-to-char (arg)
+(defun fastnav-zap-to-char-forward (arg)
   "Kill text up to and including the ARG'th occurence of a character queried
 interactively."
   (interactive "p")
