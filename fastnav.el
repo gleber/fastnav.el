@@ -259,6 +259,39 @@ queried interactively."
 		     (point)))))
 
 ;;;###autoload
+(defun fastnav-zap-to-char (arg)
+  "Kill text up to and including the ARG'th occurence of a character queried
+interactively."
+  (interactive "p")
+  (let* ((args (fastnav-highlight-read-char "Zap up to char: " arg
+                                           'fastnav-zap-to-char-forward
+                                           'fastnav-zap-to-char-backward))
+         (pos (> (car args) 0)))
+    (kill-region (point)
+                 (if pos (progn
+                           (apply 'fastnav-search-char-forward args)
+                           (1+ (point)))
+                   (apply 'fastnav-search-char-forward args)
+                   (forward-char 1)
+                   (1- (point))))))
+
+;;;###autoload
+(defun fastnav-zap-to-char-backward (arg)
+  "Kill text backward to the ARG'th occurence of a character
+queried interactively."
+  (interactive "p")
+  (let* ((args (fastnav-highlight-read-char-backward "Zap up to char backward: " arg
+                                                    'fastnav-zap-to-char-forward
+                                                    'fastnav-zap-to-char-backward))
+         (pos (> (car args) 0)))
+    (kill-region (point)
+                 (if pos (progn
+                           (apply 'fastnav-search-char-backward args)
+                           (point))
+                   (apply 'fastnav-search-char-backward args)
+                   (1+ (point))))))
+
+;;;###autoload
 (defun fastnav-replace-char-forward (arg)
   "Interactively replaces the ARG'th occurence of a character."
   (interactive "p")
