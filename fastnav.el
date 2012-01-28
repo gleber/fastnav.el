@@ -240,7 +240,7 @@ interactively."
   (let ((args (fastnav-highlight-read-char "Zap up to char: " arg
                                            'fastnav-zap-up-to-char-forward
                                            'fastnav-zap-up-to-char-backward)))
-    (delete-region (point)
+    (kill-region (point)
 		   (progn
 		     (apply 'fastnav-search-char-forward args)
 		     (point)))))
@@ -253,7 +253,7 @@ queried interactively."
   (let ((args (fastnav-highlight-read-char-backward "Zap up to char backward: " arg
                                                     'fastnav-zap-up-to-char-forward
                                                     'fastnav-zap-up-to-char-backward)))
-    (delete-region (point)
+    (kill-region (point)
 		   (progn
 		     (apply 'fastnav-search-char-backward args)
 		     (point)))))
