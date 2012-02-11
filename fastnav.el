@@ -85,11 +85,11 @@ error)."
   (let ((old-case-fold-search case-fold-search))
     (setq case-fold-search nil)
     (if (< arg 0)
-	(search-backward (char-to-string char) nil nil (- arg))
+        (search-backward (char-to-string char) nil nil (- arg))
       (progn
-	(forward-char 1)
-	(search-forward (char-to-string char) nil nil arg)
-	(backward-char 1)))
+        (forward-char 1)
+        (search-forward (char-to-string char) nil nil arg)
+        (backward-char 1)))
     (setq case-fold-search old-case-fold-search)))
 
 ;;;###autoload
@@ -104,7 +104,7 @@ error)."
   "Computes and returns the positions of the ARG'th occurrence of
 characters of the range 1 .. 255."
   (let ((seq '())
-	(result '()))
+        (result '()))
     ;; Create character sequence to look for.
     (setq char 255)
     (while (>= char 1)
@@ -114,19 +114,19 @@ characters of the range 1 .. 255."
     (let ((old-case-fold-search case-fold-search))
       (setq case-fold-search nil)
       (setq result
-	    (mapcar (lambda (char)
-		      (let ((old-point (point)))
-			(save-excursion
-			  (if (< arg 0)
-			      (search-backward (char-to-string char) nil t (- arg))
-			    (progn
-			      (forward-char 1)
-			      (search-forward (char-to-string char) nil t arg)
-			      (backward-char 1)))
-			  (if (= (point) old-point)
-			      nil
-			    (point)))))
-		    seq))
+            (mapcar (lambda (char)
+                      (let ((old-point (point)))
+                        (save-excursion
+                          (if (< arg 0)
+                              (search-backward (char-to-string char) nil t (- arg))
+                            (progn
+                              (forward-char 1)
+                              (search-forward (char-to-string char) nil t arg)
+                              (backward-char 1)))
+                          (if (= (point) old-point)
+                              nil
+                            (point)))))
+                    seq))
       (setq case-fold-search old-case-fold-search)
       result)))
 
@@ -139,43 +139,43 @@ search of occurences."
       (message text))
   (unwind-protect
       (let ((result nil)
-	    (forwarders `(,forwarder forward-char next-line))
-	    (backwarders `(,backwarder backward-char previous-line)))
-	(while (not result)
-	  (remove-overlays)
-	  (mapcar (lambda (p)
-		    (if p
-			(let ((ov (make-overlay p (1+ p))))
-			  (overlay-put ov 'priority 100)
-			  (overlay-put ov 'face lazy-highlight-face)
-			  ov)))
-		  (fastnav-get-nth-chars arg))
-	  (let* ((event (read-event))
-		 (char (event-basic-type event))
-		 (delta 0)
-		 (command (key-binding (vector event))))
-	    (if (or
-		 (and (numberp event) (< event 256))
-		 (member command
-			 ;; which commands have a keystroke
-			 ;; that is valid for search
-			 '(self-insert-command
-			   org-self-insert-command
-			   newline newline-and-indent)))
-		(setq result (list arg event))
-	      (progn
-		(if (member command forwarders)
-		    ;; increase argument
-		    (setq delta +1)
-		  (if (member command backwarders)
-		      ;; decrease argument
-		      (setq delta -1)
-		    (keyboard-quit)))
-		;; ignore arg = 0
-		(setq arg (if (= (+ arg delta) 0)
-			      (+ arg (* 2 delta))
-			    (+ arg delta)))))))
-	result)
+            (forwarders `(,forwarder forward-char next-line))
+            (backwarders `(,backwarder backward-char previous-line)))
+        (while (not result)
+          (remove-overlays)
+          (mapcar (lambda (p)
+                    (if p
+                        (let ((ov (make-overlay p (1+ p))))
+                          (overlay-put ov 'priority 100)
+                          (overlay-put ov 'face lazy-highlight-face)
+                          ov)))
+                  (fastnav-get-nth-chars arg))
+          (let* ((event (read-event))
+                 (char (event-basic-type event))
+                 (delta 0)
+                 (command (key-binding (vector event))))
+            (if (or
+                 (and (numberp event) (< event 256))
+                 (member command
+                         ;; which commands have a keystroke
+                         ;; that is valid for search
+                         '(self-insert-command
+                           org-self-insert-command
+                           newline newline-and-indent)))
+                (setq result (list arg event))
+              (progn
+                (if (member command forwarders)
+                    ;; increase argument
+                    (setq delta +1)
+                  (if (member command backwarders)
+                      ;; decrease argument
+                      (setq delta -1)
+                    (keyboard-quit)))
+                ;; ignore arg = 0
+                (setq arg (if (= (+ arg delta) 0)
+                              (+ arg (* 2 delta))
+                            (+ arg delta)))))))
+        result)
     (remove-overlays)))
 
 ;; For debugging.
@@ -204,7 +204,7 @@ interactively while highlighting the possible positions."
 queried interactively while highlighting the possible positions."
   (interactive "p")
   (apply 'fastnav-search-char-backward
-	 (fastnav-highlight-read-char-backward "Jump to char backward:" arg
+         (fastnav-highlight-read-char-backward "Jump to char backward:" arg
                                                'fastnav-jump-to-char-forward
                                                'fastnav-jump-to-char-backward)))
 
@@ -238,9 +238,9 @@ queried interactively."
 interactively."
   (interactive "p")
   (let* ((args (fastnav-highlight-read-char "Copy to char: " arg
-                                           'fastnav-mark-to-char-forward
-                                           'fastnav-mark-to-char-backward))
-        (pos (> (car args) 0)))
+                                            'fastnav-mark-to-char-forward
+                                            'fastnav-mark-to-char-backward))
+         (pos (> (car args) 0)))
     (set-mark (point))
     (apply 'fastnav-search-char-forward args)
     (if pos (forward-char 1))
@@ -269,9 +269,9 @@ interactively."
                                            'fastnav-zap-up-to-char-forward
                                            'fastnav-zap-up-to-char-backward)))
     (kill-region (point)
-		   (progn
-		     (apply 'fastnav-search-char-forward args)
-		     (point)))))
+                 (progn
+                   (apply 'fastnav-search-char-forward args)
+                   (point)))))
 
 ;;;###autoload
 (defun fastnav-zap-up-to-char-backward (arg)
@@ -282,9 +282,9 @@ queried interactively."
                                                     'fastnav-zap-up-to-char-forward
                                                     'fastnav-zap-up-to-char-backward)))
     (kill-region (point)
-		   (progn
-		     (apply 'fastnav-search-char-backward args)
-		     (point)))))
+                 (progn
+                   (apply 'fastnav-search-char-backward args)
+                   (point)))))
 
 ;;;###autoload
 (defun fastnav-zap-to-char-forward (arg)
@@ -292,8 +292,8 @@ queried interactively."
 interactively."
   (interactive "p")
   (let* ((args (fastnav-highlight-read-char "Zap up to char: " arg
-                                           'fastnav-zap-to-char-forward
-                                           'fastnav-zap-to-char-backward))
+                                            'fastnav-zap-to-char-forward
+                                            'fastnav-zap-to-char-backward))
          (pos (> (car args) 0)))
     (kill-region (point)
                  (if pos (progn
@@ -309,8 +309,8 @@ interactively."
 queried interactively."
   (interactive "p")
   (let* ((args (fastnav-highlight-read-char-backward "Zap up to char backward: " arg
-                                                    'fastnav-zap-to-char-forward
-                                                    'fastnav-zap-to-char-backward))
+                                                     'fastnav-zap-to-char-forward
+                                                     'fastnav-zap-to-char-backward))
          (pos (> (car args) 0)))
     (kill-region (point)
                  (if pos (progn
@@ -329,8 +329,8 @@ queried interactively."
     (save-excursion
       (apply 'fastnav-search-char-forward args)
       (let ((char (read-char (if (minibufferp) nil "With char: "))))
-	(delete-char +1)
-	(insert char)))))
+        (delete-char +1)
+        (insert char)))))
 
 ;;;###autoload
 (defun fastnav-replace-char-backward (arg)
@@ -343,8 +343,8 @@ character."
     (save-excursion
       (apply 'fastnav-search-char-backward args)
       (let ((char (read-char (if (minibufferp) nil "With char: "))))
-	(delete-char +1)
-	(insert char)))))
+        (delete-char +1)
+        (insert char)))))
 
 ;;;###autoload
 (defun fastnav-insert-at-char-forward (arg)
@@ -381,7 +381,7 @@ the ARG'th occurence of the character."
     (save-excursion
       (apply 'fastnav-search-char-forward args)
       (execute-kbd-macro (read-key-sequence-vector
-			  (if (minibufferp) nil "Key sequence: "))))))
+                          (if (minibufferp) nil "Key sequence: "))))))
 
 ;;;###autoload
 (defun fastnav-execute-at-char-backward (arg)
@@ -394,7 +394,7 @@ the backward ARG'th occurence of the character."
     (save-excursion
       (apply 'fastnav-search-char-backward args)
       (execute-kbd-macro (read-key-sequence-vector
-			  (if (minibufferp) nil "Key sequence: "))))))
+                          (if (minibufferp) nil "Key sequence: "))))))
 
 ;;;###autoload
 (defun fastnav-delete-char-forward (arg)
@@ -430,9 +430,9 @@ matching the keyboard event."
       (if (setq result (fastnav-highlight-read-char "Sprint:" arg
                                                     'fastnav-sprint-forward
                                                     'fastnav-sprint-backward))
-	  (progn
-	    (apply 'fastnav-search-char-forward result)
-	    (setq arg (if (> (car result) 0) 1 -1)))))))
+          (progn
+            (apply 'fastnav-search-char-forward result)
+            (setq arg (if (> (car result) 0) 1 -1)))))))
 
 
 ;;;###autoload
