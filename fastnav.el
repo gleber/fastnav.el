@@ -209,15 +209,41 @@ queried interactively while highlighting the possible positions."
                                                'fastnav-jump-to-char-backward)))
 
 ;;;###autoload
-(defun fastnav-mark-to-char-forward (arg)
+(defun fastnav-mark-up-to-char-forward (arg)
   "Set mark before the ARG'th occurence of a character queried
 interactively."
   (interactive "p")
   (let ((args (fastnav-highlight-read-char "Copy to char: " arg
-                                           'fastnav-mark-to-char-forward
-                                           'fastnav-mark-to-char-backward)))
+                                           'fastnav-mark-up-to-char-forward
+                                           'fastnav-mark-up-to-char-backward)))
     (set-mark (point))
     (apply 'fastnav-search-char-forward args)
+    (exchange-point-and-mark)))
+
+;;;###autoload
+(defun fastnav-mark-up-to-char-xbackward (arg)
+  "Set mark backward after the ARG'th occurence of a character
+queried interactively."
+  (interactive "p")
+  (let ((args (fastnav-highlight-read-char-backward "Copy to char backward: " arg
+                                                    'fastnav-mark-up-to-char-forward
+                                                    'fastnav-mark-up-to-char-backward)))
+    (set-mark (point))
+    (apply 'fastnav-search-char-backward args)
+    (exchange-point-and-mark)))
+
+;;;###autoload
+(defun fastnav-mark-to-char-forward (arg)
+  "Set mark before the ARG'th occurence of a character queried
+interactively."
+  (interactive "p")
+  (let* ((args (fastnav-highlight-read-char "Copy to char: " arg
+                                           'fastnav-mark-to-char-forward
+                                           'fastnav-mark-to-char-backward))
+        (pos (> (car args) 0)))
+    (set-mark (point))
+    (apply 'fastnav-search-char-forward args)
+    (if pos (forward-char 1))
     (exchange-point-and-mark)))
 
 ;;;###autoload
@@ -225,11 +251,13 @@ interactively."
   "Set mark backward after the ARG'th occurence of a character
 queried interactively."
   (interactive "p")
-  (let ((args (fastnav-highlight-read-char-backward "Copy to char backward: " arg
-                                                    'fastnav-mark-to-char-forward
-                                                    'fastnav-mark-to-char-backward)))
+  (let* ((args (fastnav-highlight-read-char-backward "Copy to char backward: " arg
+                                                     'fastnav-mark-to-char-forward
+                                                     'fastnav-mark-to-char-backward))
+         (pos (> (car args) 0)))
     (set-mark (point))
     (apply 'fastnav-search-char-backward args)
+    (if (not pos) (forward-char 1))
     (exchange-point-and-mark)))
 
 ;;;###autoload
@@ -240,7 +268,7 @@ interactively."
   (let ((args (fastnav-highlight-read-char "Zap up to char: " arg
                                            'fastnav-zap-up-to-char-forward
                                            'fastnav-zap-up-to-char-backward)))
-    (delete-region (point)
+    (kill-region (point)
 		   (progn
 		     (apply 'fastnav-search-char-forward args)
 		     (point)))))
@@ -253,10 +281,43 @@ queried interactively."
   (let ((args (fastnav-highlight-read-char-backward "Zap up to char backward: " arg
                                                     'fastnav-zap-up-to-char-forward
                                                     'fastnav-zap-up-to-char-backward)))
-    (delete-region (point)
+    (kill-region (point)
 		   (progn
 		     (apply 'fastnav-search-char-backward args)
 		     (point)))))
+
+;;;###autoload
+(defun fastnav-zap-to-char-forward (arg)
+  "Kill text up to and including the ARG'th occurence of a character queried
+interactively."
+  (interactive "p")
+  (let* ((args (fastnav-highlight-read-char "Zap up to char: " arg
+                                           'fastnav-zap-to-char-forward
+                                           'fastnav-zap-to-char-backward))
+         (pos (> (car args) 0)))
+    (kill-region (point)
+                 (if pos (progn
+                           (apply 'fastnav-search-char-forward args)
+                           (1+ (point)))
+                   (apply 'fastnav-search-char-forward args)
+                   (forward-char 1)
+                   (1- (point))))))
+
+;;;###autoload
+(defun fastnav-zap-to-char-backward (arg)
+  "Kill text backward to the ARG'th occurence of a character
+queried interactively."
+  (interactive "p")
+  (let* ((args (fastnav-highlight-read-char-backward "Zap up to char backward: " arg
+                                                    'fastnav-zap-to-char-forward
+                                                    'fastnav-zap-to-char-backward))
+         (pos (> (car args) 0)))
+    (kill-region (point)
+                 (if pos (progn
+                           (apply 'fastnav-search-char-backward args)
+                           (point))
+                   (apply 'fastnav-search-char-backward args)
+                   (1+ (point))))))
 
 ;;;###autoload
 (defun fastnav-replace-char-forward (arg)
