@@ -3,7 +3,7 @@
 ;; Copyright (C) 2008, 2009, 2010  Zsolt Terek <zsolt@google.com>
 ;; Copyright (C) 2010, 2011 Gleb Peregud <gleb.peregud@gmail.com>
 
-;; Version: 1.0.6
+;; Version: 1.0.7
 ;; Author: Zsolt Terek <zsolt@google.com>
 ;; Keywords: nav fast fastnav navigation
 ;; Compatibility: GNU Emacs 22, 23
