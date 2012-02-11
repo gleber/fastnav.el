@@ -142,11 +142,12 @@ search of occurences."
             (forwarders `(,forwarder forward-char next-line))
             (backwarders `(,backwarder backward-char previous-line)))
         (while (not result)
-          (remove-overlays)
+          (remove-overlays nil nil 'tag 'fastnav)
           (mapcar (lambda (p)
                     (if p
                         (let ((ov (make-overlay p (1+ p))))
                           (overlay-put ov 'priority 100)
+                          (overlay-put ov 'tag 'fastnav)
                           (overlay-put ov 'face lazy-highlight-face)
                           ov)))
                   (fastnav-get-nth-chars arg))
@@ -176,7 +177,8 @@ search of occurences."
                               (+ arg (* 2 delta))
                             (+ arg delta)))))))
         result)
-    (remove-overlays)))
+    (remove-overlays nil nil 'tag 'fastnav)
+    ))
 
 ;; For debugging.
 ;;(key-binding (vector (read-event)))
